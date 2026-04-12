@@ -1,0 +1,26 @@
+name: RTXAnnouncement
+version: '1.0-SNAPSHOT'
+main: me.rtx4090.rtxAnnc.RTXAnnc
+api-version: '1.21'
+authors: [ RTX4090 ]
+permissions:
+    rtxannouncement.review:
+        description: Allows the player to review announcements.
+        default: true
+    rtxannouncement.op:
+        description: Allows the player to manage announcements.
+        default: op
+        children:
+          rtxannouncement.op.create: true
+          rtxannouncement.op.delete: true
+          rtxannouncement.op.edit: true
+
+    rtxannouncement.op.create:
+      description: Allows the player to create announcements.
+      default: op
+    rtxannouncement.op.delete:
+      description: Allows the player to delete announcements.
+      default: op
+    rtxannouncement.op.edit:
+      description: Allows the player to edit announcements.
+      default: op
