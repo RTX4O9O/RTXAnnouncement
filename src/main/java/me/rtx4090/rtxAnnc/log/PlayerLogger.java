@@ -8,12 +8,15 @@ import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.io.IOException;
+
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
-import java.util.UUID;
 
 public class PlayerLogger {
     private static File file;
     private static FileConfiguration log;
+    private static HashMap<String, List<String>> seenAnnouncements = new HashMap<>();
 
     public static void setUp() {
         file = new File(RTXAnnc.getPlugin().getDataFolder(), "player-log.yml");
@@ -26,6 +29,10 @@ public class PlayerLogger {
         }
 
         log = YamlConfiguration.loadConfiguration(file);
+        for (String playerUUID : log.getKeys(false)) {
+            List<String> seenList = new ArrayList<>(log.getStringList(playerUUID + ".seen-announcements"));
+            seenAnnouncements.put(playerUUID, seenList);
+        }
     }
 
     public static FileConfiguration getLog() {
@@ -42,28 +49,35 @@ public class PlayerLogger {
 
     public static void reloadLog() {
         log = YamlConfiguration.loadConfiguration(file);
+        for (String playerUUID : log.getKeys(false)) {
+            List<String> seenList = new ArrayList<>(log.getStringList(playerUUID + ".seen-announcements"));
+            seenAnnouncements.put(playerUUID, seenList);
+        }
     }
 
+    public static void initializePlayerLog(Player p) {
+        String playerUUID = p.getUniqueId().toString();
+        if (!log.contains(playerUUID)) {
+            log.set(playerUUID + ".seen-announcements", new ArrayList<String>());
+            saveLog();
+            reloadLog();
+        }
+    }
+
+
     public static void markAnnouncementAsSeen(String playerUUID, String announcementUUID) {
-        List<String> seenAnnouncements = log.getStringList(playerUUID + ".seen-announcements");
-        if (!seenAnnouncements.contains(announcementUUID)) {
-            seenAnnouncements.add(announcementUUID);
-            log.set(playerUUID + ".seen-announcements", seenAnnouncements);
+        if (!seenAnnouncements.get(playerUUID).contains(announcementUUID)) {
+            seenAnnouncements.get(playerUUID).add(announcementUUID);
+            log.set(playerUUID + ".seen-announcements", seenAnnouncements.get(playerUUID));
             saveLog();
         }
     }
 
     public static int getPlayerUnreadCount(Player p) {
-        String playerUUID = p.getUniqueId().toString();
-        List<String> seenAnnouncements = log.getStringList(playerUUID + ".seen-announcements");
-
-        int totalAnnouncements = RTXAnnc.announcements.size();
-
-        return totalAnnouncements - seenAnnouncements.size();
+        return RTXAnnc.announcements.size() - seenAnnouncements.get(p.getUniqueId().toString()).size();
     }
 
-    public static boolean hasSeenAnnouncement(UUID playerUUID, UUID announcementUUID) {
-        List<String> seenAnnouncements = log.getStringList(playerUUID.toString() + ".seen-announcements");
-        return seenAnnouncements.contains(announcementUUID.toString());
+    public static boolean hasSeenAnnouncement(String playerUUID, String announcementUUID) {
+        return seenAnnouncements.get(playerUUID).contains(announcementUUID);
     }
 }

@@ -45,6 +45,14 @@ public final class RTXAnnc extends JavaPlugin implements Listener {
 
     }
 
+    @Override
+    public void onDisable() {
+        // Plugin shutdown logic
+        AnncmntLogger.saveLog();
+        PlayerLogger.saveLog();
+        Bukkit.getLogger().info("The plugin has been disabled!");
+    }
+
     public static RTXAnnc getPlugin() {
         return plugin;
     }
