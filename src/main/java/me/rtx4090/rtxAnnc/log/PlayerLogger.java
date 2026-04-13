@@ -29,9 +29,23 @@ public class PlayerLogger {
         }
 
         log = YamlConfiguration.loadConfiguration(file);
+
+        List<String> validAnnouncementIds = RTXAnnc.announcements.stream()
+                .map(a -> a.id.toString())
+                .toList();
+        boolean needsSave = false;
+
         for (String playerUUID : log.getKeys(false)) {
             List<String> seenList = new ArrayList<>(log.getStringList(playerUUID + ".seen-announcements"));
+            if (seenList.retainAll(validAnnouncementIds)) {
+                log.set(playerUUID + ".seen-announcements", seenList);
+                needsSave = true;
+            }
             seenAnnouncements.put(playerUUID, seenList);
+        }
+
+        if (needsSave) {
+            saveLog();
         }
     }
 
@@ -49,9 +63,23 @@ public class PlayerLogger {
 
     public static void reloadLog() {
         log = YamlConfiguration.loadConfiguration(file);
+
+        List<String> validAnnouncementIds = RTXAnnc.announcements.stream()
+                .map(a -> a.id.toString())
+                .toList();
+        boolean needsSave = false;
+
         for (String playerUUID : log.getKeys(false)) {
             List<String> seenList = new ArrayList<>(log.getStringList(playerUUID + ".seen-announcements"));
+            if (seenList.retainAll(validAnnouncementIds)) {
+                log.set(playerUUID + ".seen-announcements", seenList);
+                needsSave = true;
+            }
             seenAnnouncements.put(playerUUID, seenList);
+        }
+
+        if (needsSave) {
+            saveLog();
         }
     }
 
