@@ -6,7 +6,7 @@
 
     <groupId>me.rtx4090</groupId>
     <artifactId>RTXAnnouncement</artifactId>
-    <version>1.0.1-SNAPSHOT</version>
+    <version>1.1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>RTXAnnouncement</name>
