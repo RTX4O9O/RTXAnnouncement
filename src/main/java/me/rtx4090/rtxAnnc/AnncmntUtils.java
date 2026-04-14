@@ -5,7 +5,6 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 
@@ -29,26 +28,22 @@ public class AnncmntUtils {
                 .append(Component.text("Announcements", NamedTextColor.YELLOW, TextDecoration.BOLD))
                 .append(Component.newline());
 
-        Bukkit.getLogger().info(RTXAnnc.announcements.toString());
+        String playerUUID = p.getUniqueId().toString();
 
         for (Announcement announcement : RTXAnnc.announcements.reversed()) {
-            if (!PlayerLogger.hasSeenAnnouncement(p.getUniqueId().toString(), announcement.id.toString())) {
+            String announcementId = announcement.id.toString();
+            if (!PlayerLogger.hasSeenAnnouncement(playerUUID, announcementId)) {
                 message = message.append(Component.text("· ", NamedTextColor.RED))
                         .append(Component.text(announcement.title).color(NamedTextColor.GRAY).clickEvent(ClickEvent.callback(event -> reviewAnnouncements(p, announcement))))
                         .append(Component.newline());
-                Bukkit.getLogger().info("added 1 unread announcement");
             } else {
                 message = message.append(Component.text("· ", NamedTextColor.GRAY))
                         .append(Component.text(announcement.title).color(NamedTextColor.GRAY).clickEvent(ClickEvent.callback(event -> reviewAnnouncements(p, announcement))))
                         .append(Component.newline());
-                Bukkit.getLogger().info("added 1 read announcement " + announcement.title);
             }
-
         }
 
-
         p.sendMessage(message);
-        Bukkit.getLogger().info("message sent: " + message);
     }
 
     public static void reviewAnnouncements(Player p, Announcement announcement) {

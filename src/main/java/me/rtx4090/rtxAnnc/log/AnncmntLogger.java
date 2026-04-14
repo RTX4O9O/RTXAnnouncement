@@ -41,6 +41,10 @@ public class AnncmntLogger {
         }
     }
 
+    public static void saveLogAsync() {
+        Bukkit.getScheduler().runTaskAsynchronously(RTXAnnc.getPlugin(), AnncmntLogger::saveLog);
+    }
+
     public static void reloadLog() {
         log = YamlConfiguration.loadConfiguration(file);
     }
@@ -85,7 +89,7 @@ public class AnncmntLogger {
         log.set(path + ".last-edit-date", annc.lastEditDate);
         log.set(path + ".publisher", annc.publisher.getUniqueId().toString());
         log.set(path + ".content", annc.content);
-        saveLog();
+        saveLogAsync();
     }
 
 
