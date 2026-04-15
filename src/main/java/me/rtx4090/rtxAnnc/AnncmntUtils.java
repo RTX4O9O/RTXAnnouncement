@@ -3,6 +3,7 @@ package me.rtx4090.rtxAnnc;
 import me.rtx4090.rtxAnnc.log.PlayerLogger;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.event.ClickEvent;
+import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
 import org.bukkit.Bukkit;
@@ -34,11 +35,11 @@ public class AnncmntUtils {
         for (Announcement announcement : RTXAnnc.announcements.reversed()) {
             if (!PlayerLogger.hasSeenAnnouncement(p.getUniqueId().toString(), announcement.id.toString())) {
                 message = message.append(Component.text("· ", NamedTextColor.RED))
-                        .append(Component.text(announcement.title).color(NamedTextColor.GRAY).clickEvent(ClickEvent.callback(event -> reviewAnnouncements(p, announcement))))
+                        .append(Component.text(announcement.title).color(NamedTextColor.GRAY).clickEvent(ClickEvent.callback(event -> reviewAnnouncements(p, announcement))).hoverEvent(HoverEvent.showText(Component.text("點擊以檢視公告"))))
                         .append(Component.newline());
             } else {
                 message = message.append(Component.text("· ", NamedTextColor.GRAY))
-                        .append(Component.text(announcement.title).color(NamedTextColor.GRAY).clickEvent(ClickEvent.callback(event -> reviewAnnouncements(p, announcement))))
+                        .append(Component.text(announcement.title).color(NamedTextColor.GRAY).clickEvent(ClickEvent.callback(event -> reviewAnnouncements(p, announcement))).hoverEvent(HoverEvent.showText(Component.text("點擊以檢視公告"))))
                         .append(Component.newline());
             }
 
