@@ -6,7 +6,6 @@ import net.kyori.adventure.text.event.ClickEvent;
 import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextDecoration;
-import org.bukkit.Bukkit;
 import org.bukkit.Sound;
 import org.bukkit.entity.Player;
 
@@ -30,10 +29,11 @@ public class AnncmntUtils {
                 .append(Component.text("公告", NamedTextColor.YELLOW, TextDecoration.BOLD))
                 .append(Component.newline());
 
-        Bukkit.getLogger().info(RTXAnnc.announcements.toString());
+        String playerUUID = p.getUniqueId().toString();
 
         for (Announcement announcement : RTXAnnc.announcements.reversed()) {
-            if (!PlayerLogger.hasSeenAnnouncement(p.getUniqueId().toString(), announcement.id.toString())) {
+            String announcementId = announcement.id.toString();
+            if (!PlayerLogger.hasSeenAnnouncement(playerUUID, announcementId)) {
                 message = message.append(Component.text("· ", NamedTextColor.RED))
                         .append(Component.text(announcement.title).color(NamedTextColor.GRAY).clickEvent(ClickEvent.callback(event -> reviewAnnouncements(p, announcement))).hoverEvent(HoverEvent.showText(Component.text("點擊以檢視公告"))))
                         .append(Component.newline());
@@ -42,7 +42,6 @@ public class AnncmntUtils {
                         .append(Component.text(announcement.title).color(NamedTextColor.GRAY).clickEvent(ClickEvent.callback(event -> reviewAnnouncements(p, announcement))).hoverEvent(HoverEvent.showText(Component.text("點擊以檢視公告"))))
                         .append(Component.newline());
             }
-
         }
 
         p.sendMessage(message);

@@ -11,12 +11,15 @@ import java.io.IOException;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class PlayerLogger {
     private static File file;
     private static FileConfiguration log;
-    private static HashMap<String, List<String>> seenAnnouncements = new HashMap<>();
+    private static HashMap<String, Set<String>> seenAnnouncements = new HashMap<>();
 
     public static void setUp() {
         file = new File(RTXAnnc.getPlugin().getDataFolder(), "player-log.yml");
@@ -29,24 +32,7 @@ public class PlayerLogger {
         }
 
         log = YamlConfiguration.loadConfiguration(file);
-
-        List<String> validAnnouncementIds = RTXAnnc.announcements.stream()
-                .map(a -> a.id.toString())
-                .toList();
-        boolean needsSave = false;
-
-        for (String playerUUID : log.getKeys(false)) {
-            List<String> seenList = new ArrayList<>(log.getStringList(playerUUID + ".seen-announcements"));
-            if (seenList.retainAll(validAnnouncementIds)) {
-                log.set(playerUUID + ".seen-announcements", seenList);
-                needsSave = true;
-            }
-            seenAnnouncements.put(playerUUID, seenList);
-        }
-
-        if (needsSave) {
-            saveLog();
-        }
+        cleanupStaleAnnouncements();
     }
 
     public static FileConfiguration getLog() {
@@ -61,12 +47,19 @@ public class PlayerLogger {
         }
     }
 
+    public static void saveLogAsync() {
+        Bukkit.getScheduler().runTaskAsynchronously(RTXAnnc.getPlugin(), PlayerLogger::saveLog);
+    }
+
     public static void reloadLog() {
         log = YamlConfiguration.loadConfiguration(file);
+        cleanupStaleAnnouncements();
+    }
 
-        List<String> validAnnouncementIds = RTXAnnc.announcements.stream()
+    private static void cleanupStaleAnnouncements() {
+        Set<String> validAnnouncementIds = RTXAnnc.announcements.stream()
                 .map(a -> a.id.toString())
-                .toList();
+                .collect(Collectors.toSet());
         boolean needsSave = false;
 
         for (String playerUUID : log.getKeys(false)) {
@@ -75,7 +68,7 @@ public class PlayerLogger {
                 log.set(playerUUID + ".seen-announcements", seenList);
                 needsSave = true;
             }
-            seenAnnouncements.put(playerUUID, seenList);
+            seenAnnouncements.put(playerUUID, new HashSet<>(seenList));
         }
 
         if (needsSave) {
@@ -87,25 +80,27 @@ public class PlayerLogger {
         String playerUUID = p.getUniqueId().toString();
         if (!log.contains(playerUUID)) {
             log.set(playerUUID + ".seen-announcements", new ArrayList<String>());
-            saveLog();
-            reloadLog();
+            seenAnnouncements.put(playerUUID, new HashSet<>());
+            saveLogAsync();
         }
     }
 
 
     public static void markAnnouncementAsSeen(String playerUUID, String announcementUUID) {
-        if (!seenAnnouncements.get(playerUUID).contains(announcementUUID)) {
-            seenAnnouncements.get(playerUUID).add(announcementUUID);
-            log.set(playerUUID + ".seen-announcements", seenAnnouncements.get(playerUUID));
-            saveLog();
+        Set<String> seen = seenAnnouncements.get(playerUUID);
+        if (seen != null && seen.add(announcementUUID)) {
+            log.set(playerUUID + ".seen-announcements", new ArrayList<>(seen));
+            saveLogAsync();
         }
     }
 
     public static int getPlayerUnreadCount(Player p) {
-        return RTXAnnc.announcements.size() - seenAnnouncements.get(p.getUniqueId().toString()).size();
+        Set<String> seen = seenAnnouncements.get(p.getUniqueId().toString());
+        return RTXAnnc.announcements.size() - (seen != null ? seen.size() : 0);
     }
 
     public static boolean hasSeenAnnouncement(String playerUUID, String announcementUUID) {
-        return seenAnnouncements.get(playerUUID).contains(announcementUUID);
+        Set<String> seen = seenAnnouncements.get(playerUUID);
+        return seen != null && seen.contains(announcementUUID);
     }
 }
